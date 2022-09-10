@@ -22,7 +22,7 @@ namespace WellDataLoader.Services
 
         public string GetFileName(string dictionaryName, bool variations = false)
         {
-            return Path.Combine(variations == true ?
+            return Path.Combine(variations ?
                                 _headerDictionaryStore.DictionaryVariationsPath
                                 : _headerDictionaryStore.DictionaryPath,
                                 Path.GetFileNameWithoutExtension(dictionaryName) + ".json");

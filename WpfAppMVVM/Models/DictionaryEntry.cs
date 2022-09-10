@@ -5,7 +5,7 @@ namespace WpfAppMVVM.WPF.Models
     public class DictionaryEntry<TKey,TValue>
     {
         public TKey EntryKey { get; set; }
-        public TValue EntryValue { get; set; } = default(TValue);
+        public TValue EntryValue { get; set; } = default;
         public string EntryDescription { get; set; } = string.Empty;
 
         public DictionaryEntry(TKey entryKey, TValue entryValue, string entryDescription)
