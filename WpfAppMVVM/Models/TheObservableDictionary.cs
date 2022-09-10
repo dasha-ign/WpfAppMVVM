@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace WpfAppMVVM.WPF.Models
 {
-    public class TheObservableDictionary<TKey,TValue> : ObservableCollection<DictionaryEntry<TKey,TValue>>
+    public class TheObservableDictionary<TKey,TValue> : ObservableCollection<DictionaryEntry<TKey,TValue>> 
     {
         public TheObservableDictionary()
             : base()
@@ -42,9 +42,7 @@ namespace WpfAppMVVM.WPF.Models
 
         public TValue this[TKey key]
         {
-            get => (this.Where(item => item.EntryKey.Equals(key)).FirstOrDefault() != null) ?
-                    this.Where(item => item.EntryKey.Equals(key)).FirstOrDefault().EntryValue :
-                    default;
+            get => base[Convert.ToInt32(key)].EntryValue;
             set => throw new NotImplementedException();
         }
 
@@ -98,21 +96,7 @@ namespace WpfAppMVVM.WPF.Models
 
         public void Add(TKey key, TValue value) => base.Add(new(key, value));
 
-        public void Add(DictionaryEntry<TKey, TValue> item) => base.Add(item);
-
-        public bool Contains(DictionaryEntry<TKey, TValue> item) => base.Contains(item);
-
-        public bool ContainsKey(TKey key) => this.Keys.Contains(key);
-
-        public void CopyTo(DictionaryEntry<TKey, TValue>[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public bool Remove(DictionaryEntry<TKey, TValue> item) => base.Remove(item);
-
-        
+        public bool ContainsKey(TKey key) => this.Keys.Contains(key);        
 
         public new void Clear() => base.Clear();
 
@@ -134,24 +118,8 @@ namespace WpfAppMVVM.WPF.Models
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             value = this[key];
+            if (value == null) return false;
             return !value.Equals(default(TValue));
-        }
-
-        public async void SaveToJsonFile(string fileName)
-        {
-            using FileStream stream = File.Create(fileName);
-            var dictitonary = this.ToDictionary();
-            await System.Text.Json.JsonSerializer.SerializeAsync<Dictionary<TKey, TValue>>(stream,
-                                            dictitonary,
-                                            options: new JsonSerializerOptions
-                                            {
-                                                WriteIndented = true,
-                                                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                                                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin,
-                                                                                    UnicodeRanges.Cyrillic)
-                                            }
-                                        );
-            await stream.DisposeAsync();
         }
 
 

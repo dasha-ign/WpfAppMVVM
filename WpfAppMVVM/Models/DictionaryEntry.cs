@@ -4,12 +4,9 @@ namespace WpfAppMVVM.WPF.Models
 {
     public class DictionaryEntry<TKey,TValue>
     {
-        public DictionaryEntry<TKey,TValue> Parent { get; set; }
         public TKey EntryKey { get; set; }
-        public TValue EntryValue { get; set; }
-        public string EntryDescription { get; set; }
-
-        public List<DictionaryEntry<TKey,TValue>> Children { get; set; }
+        public TValue EntryValue { get; set; } = default(TValue);
+        public string EntryDescription { get; set; } = string.Empty;
 
         public DictionaryEntry(TKey entryKey, TValue entryValue, string entryDescription)
         {
@@ -28,8 +25,6 @@ namespace WpfAppMVVM.WPF.Models
         {
             EntryKey = entryKey;
         }
-
-        public DictionaryEntry(){}
 
         public override string ToString()
         {
