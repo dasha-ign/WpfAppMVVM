@@ -3,9 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfAppMVVM" xmlns:views="clr-namespace:WpfAppMVVM.WPF.Views"
+        xmlns:local="clr-namespace:WpfAppMVVM" 
+        xmlns:views="clr-namespace:WpfAppMVVM.WPF.Views"
+        xmlns:vm="clr-namespace:WpfAppMVVM.WPF.ViewModels"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="450" Width="800">
+        Title="{Binding Title}" Height="450" Width="800" 
+        DataContext="{vm:MainWindowViewModel}">
+    <!--<Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>-->
     <Grid>
         <views:DictionaryView/>
     </Grid>
