@@ -16,7 +16,7 @@ using WpfAppMVVM.WPF.Stores;
 
 namespace WellDataLoader.Services
 {
-    public class DictionaryService
+    public class DictionaryService : IDictionaryService
     {
         private readonly HeaderDictionaryStore _headerDictionaryStore;
 
@@ -24,7 +24,7 @@ namespace WellDataLoader.Services
         {
             return Path.Combine(variations == true ?
                                 _headerDictionaryStore.DictionaryVariationsPath
-                                : _headerDictionaryStore.DictionaryPath,           
+                                : _headerDictionaryStore.DictionaryPath,
                                 Path.GetFileNameWithoutExtension(dictionaryName) + ".json");
         }
 
@@ -35,12 +35,12 @@ namespace WellDataLoader.Services
                 return null;
 
             using FileStream stream = File.OpenRead(fileName);
-            var dictionary = new TheObservableDictionary<string,string>(await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream));
+            var dictionary = new TheObservableDictionary<string, string>(await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream));
             await stream.DisposeAsync();
             return dictionary;
         }
 
- 
+
         public async Task<Dictionary<string, string>> GuessColumnDictionaryValues(List<string> columnValues, string dictionaryName)
         {
             Dictionary<string, string> resultDictionary = new();
@@ -52,9 +52,9 @@ namespace WellDataLoader.Services
             //загрузить словарь вариаций значений
             string etaloninDictionary = GetFileName(dictionaryName);
 
-            Dictionary<string, string> etalon = await LoadDictionary<string,string>(etaloninDictionary);
+            Dictionary<string, string> etalon = await LoadDictionary<string, string>(etaloninDictionary);
 
-            Dictionary<string, List<string>> variations = await LoadDictionary<string,List<string>>(dictionaryName,variations:true);
+            Dictionary<string, List<string>> variations = await LoadDictionary<string, List<string>>(dictionaryName, variations: true);
             if (variations == null)
                 return resultDictionary;
 
@@ -105,7 +105,7 @@ namespace WellDataLoader.Services
                 list.Add(pair.Value);
                 resultDictionary.Add(pair.Key, list);
             }
-            await SaveDictionary<string,List<string>>(name, resultDictionary, variations:true);
+            await SaveDictionary<string, List<string>>(name, resultDictionary, variations: true);
             return resultDictionary;
         }
 
@@ -131,7 +131,7 @@ namespace WellDataLoader.Services
                 return;
 
             string fileName = GetFileName(name, variations);
-            
+
 
             using FileStream stream = File.Create(fileName);
             await System.Text.Json.JsonSerializer.SerializeAsync<IDictionary<TKey, TValue>>(stream,
@@ -156,7 +156,7 @@ namespace WellDataLoader.Services
 
         public async Task FillDescriptions(TheObservableDictionary<int, string> dictionary)
         {
-            Dictionary<string,string> dictionaryValues = await LoadDictionary<string, string>(_headerDictionaryStore.CurrentColumnHeaderDictionary);
+            Dictionary<string, string> dictionaryValues = await LoadDictionary<string, string>(_headerDictionaryStore.CurrentColumnHeaderDictionary);
             foreach (var entry in dictionary)
             {
                 entry.EntryDescription = dictionaryValues.Count(item => item.Key.ToLower() == entry.EntryValue.ToLower()) > 0 ?
@@ -167,7 +167,7 @@ namespace WellDataLoader.Services
 
 
 
-         public async Task WriteDictionaryToJson<TKey, TValue>(string dictionaryPath, IDictionary<TKey,TValue> dictionary)
+        public async Task WriteDictionaryToJson<TKey, TValue>(string dictionaryPath, IDictionary<TKey, TValue> dictionary)
         {
             using FileStream stream = File.Create(dictionaryPath);
 
@@ -177,7 +177,7 @@ namespace WellDataLoader.Services
                                             {
                                                 WriteIndented = true,
                                                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                                                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, 
+                                                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin,
                                                                                     UnicodeRanges.Cyrillic)
                                             }
                                         );
