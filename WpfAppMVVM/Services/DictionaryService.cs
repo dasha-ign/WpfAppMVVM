@@ -34,9 +34,9 @@ namespace WellDataLoader.Services
             if (!File.Exists(fileName) || new FileInfo(fileName).Length == 0)
                 return null;
 
-            using FileStream stream = File.OpenRead(fileName);
-            var dictionary = new TheObservableDictionary<string, string>(await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream));
-            await stream.DisposeAsync();
+            await using FileStream stream = File.OpenRead(fileName);
+            var results = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream);
+            var dictionary = new TheObservableDictionary<string, string>(results);
             return dictionary;
         }
 
@@ -52,9 +52,9 @@ namespace WellDataLoader.Services
             //загрузить словарь вариаций значений
             string etaloninDictionary = GetFileName(dictionaryName);
 
-            Dictionary<string, string> etalon = await LoadDictionary<string, string>(etaloninDictionary);
+            Dictionary<string, string>? etalon = await LoadDictionary<string, string>(etaloninDictionary);
 
-            Dictionary<string, List<string>> variations = await LoadDictionary<string, List<string>>(dictionaryName, variations: true);
+            Dictionary<string, List<string>>? variations = await LoadDictionary<string, List<string>>(dictionaryName, variations: true);
             if (variations == null)
                 return resultDictionary;
 
@@ -73,7 +73,7 @@ namespace WellDataLoader.Services
         }
 
 
-        public async Task<Dictionary<TKey, TValue>> LoadDictionary<TKey, TValue>(string dictionaryName, bool variations = false)
+        public async Task<Dictionary<TKey, TValue>?> LoadDictionary<TKey, TValue>(string dictionaryName, bool variations = false)
         {
             string jsonFile = GetFileName(dictionaryName, variations);
             if (!File.Exists(jsonFile) || new FileInfo(jsonFile).Length == 0)
@@ -81,10 +81,9 @@ namespace WellDataLoader.Services
 
             try
             {
-                using FileStream stream = File.OpenRead(jsonFile);
+                await using FileStream stream = File.OpenRead(jsonFile);
 
-                Dictionary<TKey, TValue> resultDictionary = await System.Text.Json.JsonSerializer.DeserializeAsync<Dictionary<TKey, TValue>>(stream);
-                await stream.DisposeAsync();
+                Dictionary<TKey, TValue>? resultDictionary = await JsonSerializer.DeserializeAsync<Dictionary<TKey, TValue>>(stream);
                 return resultDictionary;
             }
             catch (Exception e)
@@ -105,7 +104,7 @@ namespace WellDataLoader.Services
                 list.Add(pair.Value);
                 resultDictionary.Add(pair.Key, list);
             }
-            await SaveDictionary<string, List<string>>(name, resultDictionary, variations: true);
+            await SaveDictionary(name, resultDictionary, variations: true);
             return resultDictionary;
         }
 
@@ -114,7 +113,8 @@ namespace WellDataLoader.Services
         public async Task<List<string>> LoadDictionaryList()
         {
             if (string.IsNullOrEmpty(_headerDictionaryStore.DictionaryPath))
-                return null;
+                return null!;
+
             var result = new List<string>();
             foreach (var fileName in Directory.GetFiles(_headerDictionaryStore.DictionaryPath, "*.json"))
             {
@@ -125,7 +125,7 @@ namespace WellDataLoader.Services
 
 
 
-        public async Task SaveDictionary<TKey, TValue>(string name, Dictionary<TKey, TValue> content, bool variations = false)
+        public async Task SaveDictionary<TKey, TValue>(string name, Dictionary<TKey, TValue>? content, bool variations = false)
         {
             if (content == null || content.Count == 0)
                 return;
@@ -133,8 +133,8 @@ namespace WellDataLoader.Services
             string fileName = GetFileName(name, variations);
 
 
-            using FileStream stream = File.Create(fileName);
-            await System.Text.Json.JsonSerializer.SerializeAsync<IDictionary<TKey, TValue>>(stream,
+            await using FileStream stream = File.Create(fileName);
+            await JsonSerializer.SerializeAsync<IDictionary<TKey, TValue>>(stream,
                 content,
                 options: new JsonSerializerOptions
                 {
@@ -156,12 +156,17 @@ namespace WellDataLoader.Services
 
         public async Task FillDescriptions(TheObservableDictionary<int, string> dictionary)
         {
-            Dictionary<string, string> dictionaryValues = await LoadDictionary<string, string>(_headerDictionaryStore.CurrentColumnHeaderDictionary);
+            Dictionary<string, string?> dictionaryValues = await LoadDictionary<string, string?>(_headerDictionaryStore.CurrentColumnHeaderDictionary);
             foreach (var entry in dictionary)
             {
-                entry.EntryDescription = dictionaryValues.Count(item => item.Key.ToLower() == entry.EntryValue.ToLower()) > 0 ?
-                                        dictionaryValues.FirstOrDefault(item => item.Key.ToLower() == entry.EntryValue.ToLower()).Value
-                                        : string.Empty;
+                entry.EntryDescription = dictionaryValues
+                       .DefaultIfEmpty()
+                       .FirstOrDefault(item => string.Equals(item.Key, entry.EntryValue, StringComparison.OrdinalIgnoreCase))
+                       .Value
+                    ?? string.Empty;
+                //entry.EntryDescription = dictionaryValues.Any(item => string.Equals(item.Key, entry.EntryValue, StringComparison.OrdinalIgnoreCase)) ?
+                //                        dictionaryValues.FirstOrDefault(item => string.Equals(item.Key, entry.EntryValue, StringComparison.OrdinalIgnoreCase)).Value
+                //                        : string.Empty;
             }
         }
 
@@ -169,18 +174,18 @@ namespace WellDataLoader.Services
 
         public async Task WriteDictionaryToJson<TKey, TValue>(string dictionaryPath, IDictionary<TKey, TValue> dictionary)
         {
-            using FileStream stream = File.Create(dictionaryPath);
+            await using FileStream stream = File.Create(dictionaryPath);
 
-            await System.Text.Json.JsonSerializer.SerializeAsync<IDictionary<TKey, TValue>>(stream,
-                                            dictionary,
-                                            options: new JsonSerializerOptions
-                                            {
-                                                WriteIndented = true,
-                                                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                                                Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin,
-                                                                                    UnicodeRanges.Cyrillic)
-                                            }
-                                        );
+            await JsonSerializer.SerializeAsync(
+                stream,
+                dictionary,
+                options: new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic)
+                }
+            );
             await stream.DisposeAsync();
         }
 
