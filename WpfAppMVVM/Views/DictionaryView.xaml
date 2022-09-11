@@ -40,6 +40,9 @@
         </Grid>
 
         <Grid Grid.Row="1">
+            <i:Interaction.Behaviors>
+                
+            </i:Interaction.Behaviors>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="2*"/>
