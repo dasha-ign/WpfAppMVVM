@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using System.Collections.ObjectModel;
-using NPOI.HPSF;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json;
@@ -14,11 +11,11 @@ using System.Windows;
 using WpfAppMVVM.WPF.Models;
 using WpfAppMVVM.WPF.Stores;
 
-namespace WellDataLoader.Services
+namespace WpfAppMVVM.WPF.Services
 {
     public class DictionaryService : IDictionaryService
     {
-        private readonly HeaderDictionaryStore _headerDictionaryStore;
+        private readonly DictionaryStore _headerDictionaryStore;
 
         public string GetFileName(string dictionaryName, bool variations = false)
         {
@@ -28,7 +25,7 @@ namespace WellDataLoader.Services
                                 Path.GetFileNameWithoutExtension(dictionaryName) + ".json");
         }
 
-        public async Task<TheObservableDictionary<string, string>> ReadDictionaryContentFromJson(string dictionaryName)
+        public async Task<TheObservableDictionary<string, string>?> ReadDictionaryContentFromJson(string dictionaryName)
         {
             string fileName = GetFileName(dictionaryName);
             if (!File.Exists(fileName) || new FileInfo(fileName).Length == 0)
@@ -36,7 +33,7 @@ namespace WellDataLoader.Services
 
             await using FileStream stream = File.OpenRead(fileName);
             var results = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream);
-            var dictionary = new TheObservableDictionary<string, string>(results);
+            var dictionary = new TheObservableDictionary<string, string>(results, dictionaryName);
             return dictionary;
         }
 
@@ -60,7 +57,6 @@ namespace WellDataLoader.Services
 
             foreach (string columnValue in columnValues)
             {
-                //   resultDictionary.Add(columnValue,String.Empty);
                 foreach (var pair in variations)
                 {
                     if (pair.Value.Contains(columnValue))
@@ -95,8 +91,8 @@ namespace WellDataLoader.Services
 
         public async Task<Dictionary<string, List<string>>> CreateVariationsDictionary(string name)
         {
-            string jsonFile = GetFileName(name, variations: true);
-            Dictionary<string, string> initialDictionary = await LoadDictionary<string, string>(GetFileName(name));
+           // string jsonFile = GetFileName(name, variations: true);
+            Dictionary<string, string>? initialDictionary = await LoadDictionary<string, string>(GetFileName(name));
             Dictionary<string, List<string>> resultDictionary = new Dictionary<string, List<string>>();
             foreach (var pair in initialDictionary)
             {
@@ -156,7 +152,7 @@ namespace WellDataLoader.Services
 
         public async Task FillDescriptions(TheObservableDictionary<int, string> dictionary)
         {
-            Dictionary<string, string?> dictionaryValues = await LoadDictionary<string, string?>(_headerDictionaryStore.CurrentColumnHeaderDictionary);
+            Dictionary<string, string?> dictionaryValues = await LoadDictionary<string, string?>(_headerDictionaryStore.SelectedDictionary.Name);
             foreach (var entry in dictionary)
             {
                 entry.EntryDescription = dictionaryValues
@@ -164,9 +160,6 @@ namespace WellDataLoader.Services
                        .FirstOrDefault(item => string.Equals(item.Key, entry.EntryValue, StringComparison.OrdinalIgnoreCase))
                        .Value
                     ?? string.Empty;
-                //entry.EntryDescription = dictionaryValues.Any(item => string.Equals(item.Key, entry.EntryValue, StringComparison.OrdinalIgnoreCase)) ?
-                //                        dictionaryValues.FirstOrDefault(item => string.Equals(item.Key, entry.EntryValue, StringComparison.OrdinalIgnoreCase)).Value
-                //                        : string.Empty;
             }
         }
 
@@ -190,7 +183,7 @@ namespace WellDataLoader.Services
         }
 
 
-        public DictionaryService(HeaderDictionaryStore headerDictionaryStore)
+        public DictionaryService(DictionaryStore headerDictionaryStore)
         {
             _headerDictionaryStore = headerDictionaryStore;
         }

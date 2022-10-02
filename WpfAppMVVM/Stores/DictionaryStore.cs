@@ -1,23 +1,21 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.IO;
+using WpfAppMVVM.WPF.Models;
 
 namespace WpfAppMVVM.WPF.Stores
 {
-    public class HeaderDictionaryStore
+    public class DictionaryStore
     {
-        public event Action DictionaryPathChanged;
-        public event Action DictionaryVariationsPathChanged;
-        public event Action DictionaryListChanged;
-        public event Action CurrentColumnHeaderDictionaryChanged;
+                
 
-        #region DictionaryPath : string - path for a dictionary to store or read from
+        #region DictionaryPath : string? - path for a dictionary to store or read from
 
         ///<summary>path for etalon dictionary to store or read from</summary>
-        private string _DictionaryPath;
+        private string? _DictionaryPath;
 
         ///<summary>path for a dictionary to store or read from</summary>
-        public string DictionaryPath
+        public string? DictionaryPath
         {
             get => _DictionaryPath;
             set
@@ -26,6 +24,8 @@ namespace WpfAppMVVM.WPF.Stores
                 DictionaryPathChanged?.Invoke();
             }
         }
+
+        public event Action DictionaryPathChanged;
 
         #endregion
 
@@ -46,16 +46,18 @@ namespace WpfAppMVVM.WPF.Stores
             }
         }
 
+        public event Action DictionaryVariationsPathChanged;
+
         #endregion
 
 
-        #region DictionaryList : List<string> - list of existing header dictionaries
+        #region DictionaryList : List<TheDictionary<string,string>> - list of existing header dictionaries
 
         ///<summary>list of existing header dictionaries</summary>
-        private List<string> _DictionaryList;
+        private List<TheDictionary<string, string>>? _DictionaryList;
 
         ///<summary>list of existing header dictionaries</summary>
-        public List<string> DictionaryList
+        public List<TheDictionary<string, string>>? DictionaryList
         {
             get => _DictionaryList;
             set
@@ -65,24 +67,29 @@ namespace WpfAppMVVM.WPF.Stores
             }
         }
 
+        public event Action? DictionaryListChanged;
+
+
         #endregion
 
 
-        #region CurrentColumnHeaderDictionary : string - name of selected column dictionary
+        #region SelectedDictionary : TheDictionary<string,string> - name of selected dictionary
 
-        ///<summary>name of selected column dictionary</summary>
-        private string _CurrentColumnHeaderDictionary;
+        ///<summary>name of selected dictionary</summary>
+        private TheDictionary<string,string> _SelectedDictionary;
 
-        ///<summary>name of selected column dictionary</summary>
-        public string CurrentColumnHeaderDictionary
+        ///<summary>name of selected dictionary</summary>
+        public TheDictionary<string,string> SelectedDictionary
         {
-            get => _CurrentColumnHeaderDictionary;
+            get => _SelectedDictionary;
             set
             {
-                _CurrentColumnHeaderDictionary = value;
-                CurrentColumnHeaderDictionaryChanged?.Invoke();
+                _SelectedDictionary = value;
+                SelectedDictionaryChanged?.Invoke();
             }
         }
+
+        public event Action? SelectedDictionaryChanged;
 
         #endregion
     }

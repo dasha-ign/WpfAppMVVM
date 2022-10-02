@@ -16,24 +16,23 @@ namespace WpfAppMVVM.WPF.Models
 {
     public class TheObservableDictionary<TKey,TValue> : ObservableCollection<DictionaryEntry<TKey,TValue>> 
     {
+        public string? Name { get; set; }
+
         public TheObservableDictionary()
             : base()
         {
         }
 
-        //public TheObservableDictionary(IEnumerable<DictionaryEntry<TKey, TValue>> enumerable)
-        //    : base(enumerable)
-        //{
-        //}
+        public TheObservableDictionary(string name) : base()
+        {
+            Name = name;
+        }
 
-        //public TheObservableDictionary(List<DictionaryEntry<TKey, TValue>> list)
-        //    : base(list)
-        //{
-        //}
 
-        public TheObservableDictionary(IDictionary<TKey, TValue> dictionary)
+        public TheObservableDictionary(IDictionary<TKey, TValue> dictionary, string name)
         {
             ArgumentNullException.ThrowIfNull(dictionary, nameof(dictionary));
+            Name = name;
             foreach (var kv in dictionary)
             {
                 Add(new DictionaryEntry<TKey, TValue>(kv.Key,kv.Value));

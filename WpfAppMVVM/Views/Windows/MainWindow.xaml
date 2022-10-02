@@ -9,11 +9,9 @@
         xmlns:vm="clr-namespace:WpfAppMVVM.WPF.ViewModels"
         xmlns:behaviors="clr-namespace:WpfAppMVVM.WPF.Behaviors"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="450" Width="800" 
-        DataContext="{vm:MainWindowViewModel}" AllowDrop="True">
-    <!--<Window.DataContext>
-        <vm:MainWindowViewModel/>
-    </Window.DataContext>-->
+        Title="{Binding Title}" Height="450" Width="800" >
+    <!--DataContext="{vm:MainWindowViewModel}" AllowDrop="True"
+        >-->
     <i:Interaction.Behaviors>
         <behaviors:DropData/>
     </i:Interaction.Behaviors>

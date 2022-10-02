@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using WpfAppMVVM.WPF.Models;
 
-namespace WellDataLoader.Services
+namespace WpfAppMVVM.WPF.Services
 {
     public interface IDictionaryService
     {

@@ -4,12 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using WpfAppMVVM.WPF.Services;
+using WpfAppMVVM.WPF.Stores;
+using WpfAppMVVM.WPF.ViewModels.Base;
 
 namespace WpfAppMVVM.WPF.ViewModels
 {
     internal class DictionaryViewModel : ViewModelBase
     {
-        
+        private readonly IDictionaryService _dictionaryService;
+        private readonly DictionaryStore _dictionaryStore;
+
 
         public ICommand AddNewDictionaryCommand;
 
@@ -21,10 +26,12 @@ namespace WpfAppMVVM.WPF.ViewModels
 
         #endregion
 
-        public DictionaryViewModel()
+        public DictionaryViewModel(DictionaryStore dictionaryStore)
         {
-            dictionaryListViewModel = new DictionaryListViewModel();
-            dictionaryContentViewModel = new DictionaryContentViewModel();
+            _dictionaryStore = dictionaryStore;
+            dictionaryListViewModel = new DictionaryListViewModel(_dictionaryStore);
+            dictionaryContentViewModel = new DictionaryContentViewModel(_dictionaryStore);
+            
         }
     }
 }
